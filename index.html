@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>AI Sign language Translator</title>
+    <script src="static/jquery.js"></script>
+    <script src="static/htmlcanvas.js"></script>
+    <script src="static/tfmin.js"></script>
+    <script src="static/tmmin.js"></script>
+    <link rel="stylesheet" href="static/loading.css">
+	<style>
+	*{
+		font-family: arial;
+	}
+	.flex{
+		display: flex;
+		align-items: center;
+		width: 330px;
+		justify-content: space-around;
+	}
+	.grid{
+		display: grid;
+	}
+	.main{
+		display: grid;
+		justify-content: center;
+		padding: 5px;
+	}
+	.main span{}
+	.data-section{
+		margin: auto;
+	}
+	.bar{
+		width: 300px;
+		height: 30px;
+		border: 1.5px solid #333;
+		margin: 10px 0px;
+		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.prediction-section{
+		text-align: center;
+		margin: 20px;
+		#font-weight: bold;
+		font-size: 20px;
+	}
+	h3{
+		margin: 20px;
+		text-align: center;
+		font-size: 20px;
+	}
+	.prediction-section .flex{
+		justify-content: space-between;
+		margin-right: 10px;
+		margin-bottom: 10px;
+	}
+	b{
+		width: 50%;		
+		text-align: left;
+	}
+	#dataValues{
+		margin: 20px auto;
+		border: 1px solid #333;
+		padding: 5px;
+		background: #fff;
+	}
+	#name{
+		font-size: 22px;
+		font-weight: bold;
+	}
+	.si{
+		position: relative;
+		height: 224px;
+	}
+	.box{
+		width: 224px;
+	}
+	.box .flex{
+		width: 224px;
+	}
+	.box .flex .bar{
+		height: 10px;
+		width: 90%;
+		margin: 5px 0px;
+	}
+	#main{
+		z-index: 1;
+		display: grid;
+		justify-content: center;
+		margin: 30px auto;
+	}
+	#main img{
+		width: 224px;
+		height: 176px;
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: none;
+	}
+	#abc{
+		z-index: 2;
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		background: blue;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: white;
+	}
+	#abc span{
+		line-height: 30px;
+		font-size: 18px;
+		font-weight: bold;
+		margin-right: 10px;
+	}
+	#label-container{
+		margin: 20px 0px;
+		font-size: 18px;
+	}
+	#result{
+		font-size: 24px;
+		font-weight: bold;
+		color: green;
+	}
+	#localIP{
+		font-size: 24px;
+		text-align: center;
+	}
+</style>
+</head>
+<body>
+<div id="main">
+	<p id="localIP"></p>
+	<h2>Sensor Data</h2>
+	<div class="si">
+		<div id="box" class="box grid">
+			<div class="flex"><span>a</span><span class="bar" id="a1"></span></div>
+			<div class="flex"><span>b</span><span class="bar" id="b1"></span></div>
+			<div class="flex"><span>c</span><span class="bar" id="c1"></span></div>
+			<div class="flex"><span>d</span><span class="bar" id="d1"></span></div>
+			<div class="flex"><span>e</span><span class="bar" id="e1"></span></div>	
+			<div class="flex"><span>x</span><span class="bar" id="f1"></span></div>
+			<div class="flex"><span>y</span><span class="bar" id="g1"></span></div>
+			<div class="flex"><span>z</span><span class="bar" id="h1"></span></div>
+		</div>
+		<img id="img" src="static/background.png">
+	</div>
+	<!--h2>Classes</h2-->
+	<!--button type="button" onclick="predict()">Capture and Predict</button-->
+	<!--div id="label-container"></div-->
+	<h2>Prediction results</h2>
+	<span id="result"></span>
+</div>
+<div id="abc">
+	<span>Please wait few moments<br>while model is loading...</span>
+	<div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+</div>
+<script>
+	var val = 0;
+	var values;
+	var mn = document.getElementById("main");
+	var mabc = document.getElementById("abc");
+	var result = document.getElementById("result");
+	const emgArray = ["hello", "how are you?", "i am fine", "thank you", "nice to meet you", "what is your name?", "what do you do?", "Where do you live?", "please help me", "welcome", "have a nice day", "good bye", "i am thirsty", "i am hungry", "i am not feeling well", "is it raining?", "what time is it?", "i am going to work", "i am going home", "i am going for prayer", "can you give me a lift?"];
+
+	var ac = 0;
+    function ssa(data) {
+        values = data;
+        var ab = 2550;
+
+        document.getElementById('a1').style.background = 'linear-gradient(90deg, rgb(227 151 164) ' + ((values.split(',')[3])/ab)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('b1').style.background = 'linear-gradient(90deg, rgb(223, 107, 218) ' + ((values.split(',')[2])/ab)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('c1').style.background = 'linear-gradient(90deg, rgb(61, 209, 142) ' + ((values.split(',')[1])/ab)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('d1').style.background = 'linear-gradient(90deg, #FFC107 ' + ((values.split(',')[0])/ab)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('e1').style.background = 'linear-gradient(90deg, #2196F3 ' + ((values.split(',')[5])/ab)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('f1').style.background = 'linear-gradient(90deg, #FF5722 ' + ((values.split(',')[6])/360)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('g1').style.background = 'linear-gradient(90deg, rgb(175,113,207) ' + ((values.split(',')[7])/360)*100 + '%, rgb(237 237 237) 0%)';
+        document.getElementById('h1').style.background = 'linear-gradient(90deg, rgb(255,34,156) ' + ((values.split(',')[8])/360)*100 + '%, rgb(237 237 237) 0%)';
+		//if((values.split(',')[5] > 15 && values.split(',')[5] < 150) && values.split(',')[7] < 150){
+			saveDivAsImageAndPredict();
+		/*}else{
+			result.innerText = "none";
+			sendData("none");
+			if(ac == 0){
+				//setTimeout(function(){ 
+					//predictme();
+				//}, 200);
+				ac = 1;
+			}
+		}*/
+		
+	}
+    
+    var data;
+    
+    function fetchData() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var data = xhttp.responseText;
+                ssa(data);
+            }
+        };
+        xhttp.open("GET", "http://192.168.4.1/", true);//http://192.168.4.1
+        xhttp.send();
+    }
+
+    setInterval(fetchData, 500);
+
+    const URL = "static/model/";
+    let model, labelContainer, maxPredictions;
+
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+        /*labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }*/
+    }
+
+    async function saveDivAsImageAndPredict() {
+        var div = $('.box')[0];
+        const canvas = await html2canvas(div);
+        const dataURL = canvas.toDataURL('image/png');
+		document.getElementById("img").src = dataURL;
+		setTimeout(function(){ 
+			predictme();
+			//console.log(1234);
+		}, 200); 
+    }
+
+	var previousData = "";
+    async function predictme() {
+		if(val === 0){
+			//console.log("initiallized");
+			mabc.style.display = "none";
+			val = 1;
+		}
+	    var a = document.getElementById("img");
+        const prediction = await model.predict(a);
+		
+		let maxProbability = 0;
+		let maxClass = '';
+		var pred = "";
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            //labelContainer.childNodes[i].innerHTML = classPrediction;
+			const probability = prediction[i].probability;
+			if (probability > maxProbability) {
+				maxProbability = probability;
+				maxClass = prediction[i].className;
+				console.log(maxClass);
+				if(maxClass == "a"){
+					pred = emgArray[0];
+				}else if(maxClass == "b"){
+					pred = emgArray[1];
+				}else if(maxClass == "c"){
+					pred = emgArray[2];
+				}else if(maxClass == "d"){
+					pred = emgArray[3];
+				}else if(maxClass == "f"){
+					pred = emgArray[4];
+				}else if(maxClass == "g"){
+					pred = emgArray[5];
+				}else if(maxClass == "h"){
+					pred = emgArray[6];
+				}else if(maxClass == "i"){
+					pred = emgArray[7];
+				}else if(maxClass == "j"){
+					pred = emgArray[8];
+				}else if(maxClass == "k"){
+					pred = emgArray[9];
+				}else if(maxClass == "l"){
+					pred = emgArray[10];
+				}else if(maxClass == "m"){
+					pred = emgArray[11];
+				}else if(maxClass == "o"){
+					pred = emgArray[12];
+				}else if(maxClass == "p"){
+					pred = emgArray[13];
+				}else if(maxClass == "q"){
+					pred = emgArray[14];
+				}else if(maxClass == "s"){
+					pred = emgArray[15];
+				}else if(maxClass == "w"){
+					pred = emgArray[16];
+				}else if(maxClass == "x"){
+					pred = emgArray[17];
+				}else if(maxClass == "y"){
+					pred = emgArray[18];
+				}else if(maxClass == "z"){
+					pred = emgArray[19];
+				}else if(maxClass == "none"){
+					pred = "none";
+				}
+				result.innerText = pred;
+				if(previousData != maxClass){
+					previousData = maxClass;
+					sendData(maxClass);
+				}
+			}
+        }
+    }
+
+    init();
+	
+</script>
+<script>
+    // Function to get the local IP address
+    function getLocalIP() {
+        const pc = new RTCPeerConnection();
+        pc.createDataChannel('');
+        pc.createOffer()
+            .then(offer => pc.setLocalDescription(offer))
+            .catch(err => console.error(err));
+        pc.onicecandidate = function (event) {
+            if (event.candidate) {
+                const localIP = event.candidate.address;
+                document.getElementById('localIP').textContent = "IP: "+localIP;
+                pc.close(); // Close the PeerConnection
+            }
+        };
+    }
+
+    // Call the function when the page loads
+    window.onload = getLocalIP;
+	
+	
+	function sendData(dat){
+		// Create a new XMLHttpRequest object
+		var xhr = new XMLHttpRequest();
+		dat += ","+values.split(',')[5];
+		//console.log(dat);
+
+		// Define the request method, URL, and set async to true
+		xhr.open("GET", "http://127.0.0.1:5000/post?data="+dat, true);
+
+		// Define a callback function to handle the response
+		xhr.onreadystatechange = function() {
+		  if (xhr.readyState === XMLHttpRequest.DONE) {
+			if (xhr.status === 200) {
+			  // Request was successful, handle response here if needed
+			  //console.log("Response received:", xhr.responseText);
+			} else {
+			  // Request failed, handle error here
+			  //console.error("Request failed:", xhr.status);
+			}
+		  }
+		};
+
+		// Send the request
+		xhr.send();
+
+	}
+</script>
+
+</body>
+</html>
